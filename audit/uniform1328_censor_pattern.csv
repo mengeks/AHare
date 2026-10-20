@@ -1,0 +1,4 @@
+"metric","reconstructed","working_model"
+"censor_fraction",0.280068728522337,0.283218950204994
+"fraction_censored_before_13.2",0.049079754601227,0.173104493060093
+"median_censor_time",17.65,17.1135235307118

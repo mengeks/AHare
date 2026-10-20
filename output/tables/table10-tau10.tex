@@ -1,0 +1,21 @@
+\begin{table}[ht]
+\centering
+\caption{ARE and ERE under PH (HR$=0.70$), $\tau=10$, $n_1=n_0=150$ per arm and $B=500$.}
+\label{tab:sim-tau10}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccc}
+\toprule
+Censoring & Baseline & ARE(D/C) & ARE(R/C) & ARE(R/D) & ERE(D/C) & ERE(R/C) & ERE(R/D)
+\\
+\midrule
+Light & Weibull(kappa=0.7) & 0.920 & 0.981 & 1.067 & 0.985 & 0.974 & 0.989 \\
+Light & Exponential(lambda0=0.10) & 0.913 & 0.976 & 1.068 & 0.941 & 0.989 & 1.051 \\
+Light & Weibull(kappa=1.5) & 0.853 & 0.954 & 1.119 & 0.895 & 0.906 & 1.013 \\
+\midrule
+Heavy & Weibull(kappa=0.7) & 0.970 & 0.669 & 0.690 & 1.018 & 0.722 & 0.709 \\
+Heavy & Exponential(lambda0=0.10) & 0.973 & 0.665 & 0.684 & 1.014 & 0.670 & 0.660 \\
+Heavy & Weibull(kappa=1.5) & 0.987 & 0.651 & 0.659 & 0.987 & 0.611 & 0.619 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}

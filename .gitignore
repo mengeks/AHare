@@ -1,0 +1,82 @@
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
+
+# User-specific files
+.Ruserdata
+
+# Machine-local dependency library restored by run_all.R --install-deps
+.library/
+renv/library/
+renv/staging/
+
+# LaTeX build intermediates (final manuscript PDFs are tracked)
+output/pdf/*
+!output/pdf/*.pdf
+
+# Example code in package build process
+*-Ex.R
+
+# Output files from R CMD build
+/*.tar.gz
+
+# Output files from R CMD check
+/*.Rcheck/
+
+# RStudio files
+.Rproj.user/
+
+# produced vignettes
+vignettes/*.html
+vignettes/*.pdf
+
+# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
+.httr-oauth
+
+# knitr and R markdown default cache directories
+*_cache/
+/cache/
+
+# Temporary files created by R markdown
+*.utf8.md
+*.knit.md
+
+# R Environment Variables
+.Renviron
+
+# Mac
+.DS_Store
+
+# Output directories
+b01-out/
+asa02-out/
+find-weibull-AHSW-out/
+output/archive/
+output/checkmate057/[0-9]*/
+output/main-sim-paper/[0-9]*/
+
+# Output files (exclude paper/ stable artifacts — those are tracked)
+*.csv
+*.pdf
+*.rds
+!results/*.rds
+!data/CheckMate057-OS-original.csv
+!data/CheckMate057-OS-censoring-reconstructed.csv
+!output/checkmate057/paper/*.csv
+!output/checkmate057/paper/*.tex
+!output/checkmate057/paper/*.pdf
+!output/main-sim-paper/paper/*.csv
+!output/main-sim-paper/paper/*.tex
+!output/main-sim-paper/paper/*.pdf
+!output/figures/*/paper/*.pdf
+!output/figures/figure*.pdf
+!output/figures/summary-*.pdf
+!output/pdf/*.pdf
+!audit/*.csv
+!audit/legacy_ere_replay.rds
+output/figures/cosine/
+output/checkmate057/*.tex
+tmp/

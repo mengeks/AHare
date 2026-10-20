@@ -1,0 +1,13 @@
+"job","trial","workers","B","elapsed_seconds"
+"ph_ere",1,1,300,7.872
+"ph_ere",1,4,300,2.149
+"ph_ere",2,4,300,2.129
+"ph_ere",2,1,300,7.817
+"appendix_power",1,1,300,9.113
+"appendix_power",1,4,300,2.502
+"appendix_power",2,4,300,2.459
+"appendix_power",2,1,300,9.184
+"checkmate_power",1,1,300,15.7
+"checkmate_power",1,4,300,4.14100000000001
+"checkmate_power",2,4,300,4.11500000000001
+"checkmate_power",2,1,300,15.785

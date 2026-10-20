@@ -1,0 +1,1229 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{natbib}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{subcaption}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+
+\newcommand{\RAH}{\mathrm{RAH}}
+\newcommand{\RMST}{\mathrm{RMST}}
+\newcommand{\DRMST}{D\text{-}\mathrm{RMST}}
+\newcommand{\dd}{\,d}
+
+\newcommand{\xmeng}[1]{\textcolor{red}{[xmeng: {#1}]}}
+\newcommand{\ken}[1]{\textcolor{orange}{[Ken: {#1}]}}
+\newcommand{\hajime}[1]{\textcolor{blue}{[Hajime: {#1}]}}
+\newcommand{\lu}[1]{\textcolor{green}{[Lu: {#1}]}}
+
+\title{A Cosine-Projection Framework for Choosing Among\\
+       Cox HR, D-RMST, and Average-Hazard Tests in Survival Trials}
+\author{Xiang Meng, Lu Tian, Hajime Uno}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Three summary statistics are available for comparing two
+survival distributions, the hazard ratio (HR) from Cox model, the difference in restricted mean survival time (D-RMST), and the ratio of average hazards
+(RAH), yet they detect different patterns of treatment effect with different efficiency, and there is no guidance on
+which to use in a given trial.  RAH, in particular, is a recent
+proposal, whose large-sample efficiency has not been studied systematically. In the paper, we show that all three statistics admit a first-order weighted comparison
+of cumulative hazard functions, represent each statistic by a direction in
+$L^2([0,\tau],\lambda_0(v)\dd v)$, and establish that its asymptotic
+efficiency relative to the oracle test is exactly the squared cosine of the
+angle between that direction and the true signal for the treatment effect; the asymptotic relative efficiency of any two tests is then a ratio of squared cosines.
+Because the censoring and accrual design enters only through the at-risk
+weight function $w(v)$, the cosine metric explains---and predicts---how design
+choices can reverse the efficiency ordering among tests, something raw
+weight-function plots cannot do, and it doubles as a design-stage
+diagnostic for test selection.
+We illustrate the framework using the CheckMate~057 immunotherapy trial and
+corroborate the theoretical results through simulations spanning proportional- and
+non-proportional-hazards settings.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+
+Three tests are available for comparing two survival distributions in
+randomized clinical trials, and they occupy very different positions in
+practice.
+The test based on Cox proportional hazards model (or the log-rank test) is the only one in widespread use: it is
+optimal under proportional hazards (PH) assumption and remains the default for
+regulatory submissions.
+The test based on restricted mean survival time (RMST) \citep{Uno2014} is
+used increasingly often when the proportional hazards assumption is
+violated, offering a clinically interpretable estimand---the difference
+in restricted mean survival time (D-RMST) up to a horizon $\tau$.
+Unlike D-RMST, the ratio of average hazards (RAH) \citep{Uno2023} is an estimand on the \emph{rate} scale: it contrasts the two arms' average event rates per unit of event-free person-time on a time window. As D-RMST, RAH also doesn't require PH assumption.
+
+
+Being relatively new, the RAH-based test is also much less well understood than the other two tests. Although its null distribution is known \citep{Uno2023}, its large-sample \emph{efficiency}—that is, its power and the alternatives against which it is most sensitive, relative to the two established tests—has not been systematically studied. This is important because practitioners often face a practical question: \emph{given a specific trial design and an anticipated treatment-effect pattern, which test is most appropriate?}
+
+
+
+CheckMate 057 was a randomized, open-label Phase III trial comparing nivolumab with docetaxel in 582 patients with previously treated non-squamous NSCLC \citep{Borghaei2015}. The primary endpoint was overall survival. Individual-level data were reconstructed from the published Kaplan--Meier (KM) curves using the algorithm of \cite{Guyot2012}.
+We considered two reconstructed datasets, both comprising $n_0=290$ docetaxel and $n_1=292$ nivolumab patients, that differed only in their censoring patterns. In the ``\emph{original}'' dataset, the subject-level data were reconstructed from the published figure and the reported riskset information, yielding 419 observed events (226 in the docetaxel group and 193 in the nivolumab group). To illustrate the dependence of test results on the censoring-time distribution, we reconstructed a second dataset with the same marginal KM curves as those reported in the publication but different risk-set sizes over time. This results in only 267 observed events (134 in the docetaxel group and 133 in the nivolumab group). The time window of interest was set to $[0,\tau]=[0,24]$ months.
+
+
+Table~\ref{tab:results-cm057-intro} presents the results of the three aforementioned tests for both reconstructed datasets. The point estimates are broadly consistent between the two datasets (Cox HR: 0.75 vs.\ 0.84; D-RMST: 1.73 vs.\ 1.75 months; RAH: 0.74 vs.\ 0.74), all indicating a survival advantage for nivolumab. In contrast, the corresponding $p$-values differ substantially (Cox model-based test: $p=0.004$ vs.\ $p=0.157$; D-RMST-based test: $p=0.012$ vs.\ $p=0.058$; RAH-based test: $p=0.003$ vs.\ $p=0.014$). Thus, the $p$-values for the Cox model- and D-RMST-based tests cross the conventional 0.05 threshold between the two analyses, whereas the RAH-based test remains statistically significant in both datasets. This sensitivity to the censoring distribution does not indicate a failure of any particular test. Rather, it reflects a fundamental interplay among the underlying treatment-effect pattern, the choice of test, and the censoring distribution. Understanding and quantifying this interplay is the central objective of this paper.
+
+
+
+The motivating example raises a question that is more general than
+``is RAH better than D-RMST?''. Instead, the correct question is
+
+\begin{quote}
+\emph{Given assumed survival functions, a treatment-effect pattern, and
+a censoring/accrual design, which test---Cox, D-RMST, or RAH---is most
+statistically efficient?}
+\end{quote}
+
+
+
+
+\begin{table}[ht]
+\centering
+\caption{CheckMate 057 OS results under two censoring reconstructions
+  ($\tau=24$ months).
+  Values below 1 (Cox, RAH) or above 0 (D-RMST) favour nivolumab.}
+\label{tab:results-cm057-intro}
+\medskip
+\begin{tabular}{llccc}
+\toprule
+Dataset & Method & Estimate & 95\% CI & $p$-value \\
+\midrule
+\multirow{3}{*}{Original} & Cox  & HR $= 0.750$ & $(0.618,\; 0.910)$ & 0.004 \\
+  & D-RMST  & $\hat\Delta = 1.75$ mo & $(0.39,\; 3.11)$ & 0.012 \\
+  & RAH  & $\hat\theta_{\RAH} = 0.739$ & $(0.604,\; 0.902)$ & 0.003 \\
+\midrule
+\multirow{3}{*}{Sensitivity} & Cox  & HR $= 0.840$ & $(0.660,\; 1.069)$ & 0.157 \\
+  & D-RMST  & $\hat\Delta = 1.73$ mo & $(-0.06,\; 3.53)$ & 0.058 \\
+  & RAH  & $\hat\theta_{\RAH} = 0.743$ & $(0.586,\; 0.942)$ & 0.014 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Related work}
+\label{sec:related}
+
+Reservations about the HR as a summary measure of treatment effect are long-standing. When the PH assumption is violated, the Cox maximum partial-likelihood estimator converges to a weighted average of the time-varying log hazard ratio, with weights depending on the study-specific censoring distribution \citep{Cox1972,Hernan2010,Horiguchi2019}. Consequently, two trials with the same underlying biological treatment effect can report materially different HRs simply because their accrual rates or follow-up durations differ. Moreover, because the HR is a relative measure without a direct absolute reference, it can be difficult to translate into clinically actionable terms \citep{Uno2014}. These concerns have motivated estimands defined directly through the marginal survival function, such as the D-RMST \citep{Royston2013,Uno2014,Tian2014,survRM2} and RAH \citep{Uno2023,meng2026efficient}.
+
+Efficiency comparisons among these tests have received much less attention. The closest antecedent to the present paper is \citet{Tian2018}, who compare the logrank test with the D-RMST test through their asymptotic relative efficiency under both PH and non-PH settings. They find that the D-RMST test performs nearly as well as the logrank test when PH holds and can substantially outperform it when PH fails, whereas the logrank test retains an advantage when the two survival curves separate only late in follow-up. When the underlying alternative is unknown, combination (Max-combo) tests trade a small amount of efficiency for greater robustness by considering a family of tests \citep{LinEtal2020}.
+
+
+
+
+\subsection{Contributions and Paper Outline}
+\label{sec:contributions}
+
+This paper makes four contributions. First, we place the Cox-, D-RMST-, and RAH-based tests on a common asymptotic-efficiency scale through Pitman efficacy, extending the comparison of \citet{Tian2018} to include the more recent RAH-based test. Second, we introduce a \emph{cosine/projection metric}, defined as the relative efficiency of a given test with respect to the oracle test. This metric facilitates the comparison of different tests and provides a geometric interpretation of their strengths and limitations under a given alternative. Third, we study how the censoring distribution and accrual pattern affect the relative efficiency of the three tests. Finally, we demonstrate how the cosine metric can be used to inform test selection at the study-design stage by considering different plausible patterns of treatment effect, censoring and accrual. All results are supported by extensive numerical studies, including simulations and an analysis of the reconstructed CheckMate~057 trial.
+
+The paper is organized as follows. Section~\ref{sec:setup} defines the three test statistics, shows that each can be expressed as a form of weighted logrank test statistic, and presents their asymptotic efficiency under local alternative. Section~\ref{sec:cosine} develops the cosine metric for facilitating the comparison of the three tests. Section~\ref{sec:sim} presents simulation studies under a range of settings, and Section~\ref{sec:cm057-analysis} reports statistical analysis for a study design based on CheckMate~057 trial. Section~\ref{sec:discussion} summarizes the main contributions and discusses directions for future research.
+
+\section{Three Statistics, a Weighted-Log-Rank Representation, and Their Efficiency}
+\label{sec:setup}
+
+\subsection{Setup and notation}
+\label{sec:notation}
+
+Let $T_k$ ($k=0,1$) denote the event time in group $k$ with survival
+function $S_k(t)$, cumulative hazard function $\Lambda_k(t)$, and hazard function $\lambda_k(t)$.
+Define
+\begin{equation}
+  F_k(t)=1-S_k(t)\qquad \mbox{and} \qquad R_k(t)=\int_0^t S_k(u)\dd u.
+\end{equation}
+Thus, $F_k(t)=\Pr(T_k\le t)$ is the cumulative incidence rate (the probability
+that the event has occurred by time $t$) and $R_k(\tau)$ is the RMST on $(0,\tau]$.
+Let $C_k$ be the censoring time, independent of $T_k$, with
+$G_k(t)=\Pr(T_k\wedge C_k\ge t)$ bounded away from zero on $(0,\tau]$.
+Let $p_k$ be the limiting proportion of subjects in group $k$ $\left(p_0+p_1=1\right)$.
+Lastly, the at-risk weight function is defined as
+\begin{equation}\label{eq:w}
+  w(t)=\frac{p_0\,p_1\,G_0(t)\,G_1(t)}{p_0\,G_0(t)+p_1\,G_1(t)}.
+\end{equation}
+
+Two simplifying conditions recur throughout the paper.
+By \emph{equal allocation} we mean a balanced design with $p_0=p_1=1/2.$
+By \emph{a common censoring distribution} we mean that the two groups
+share the same marginal censoring law, and we write
+$S_C(v)=\Pr(C\ge v)$ for the common censoring survival function;
+this is the case for administrative censoring.
+Under these two conditions, the at-risk weight \eqref{eq:w} becomes $w(t)=0.5\times S_C(t)/\{S_0(t)^{-1}+S_1(t)^{-1}\}.$ If the null hypothesis, $S_1(t)=S_0(t), t\in [0, \tau],$ is also true, then  the weight function further reduces to $w(t)=S_0(t)S_C(t)/4$.
+
+
+
+\subsection{The three test statistics}
+\label{sec:three-stats}
+
+We can test $H_0:S_1(t)=S_0(t), t\in [0, \tau]$ against alternatives using three
+statistics.  For each statistic, we state the corresponding estimand, point estimator, and asymptotic distribution of the test statistic.
+Throughout, $\hat S_k(\cdot)$ and
+$\hat\Lambda_k(\cdot)$ denote the Kaplan--Meier and Nelson--Aalen estimators of
+$S_k(\cdot)$ and $\Lambda_k(\cdot)$, respectively, $\hat G_k(\cdot)$ denote the empirical counterpart of $G_k(\cdot)$, and $\hat{R}_k(t)$ denote $\int_0^t \hat{S}_k(u)du$, a consistent estimator of $R_k(t).$
+
+
+\paragraph{HR.}
+Under the PH assumption,
+$$\theta=\log\left\{\frac{\lambda_1(t)}{\lambda_0(t)} \right\}$$
+ does not depend on $t$ and can be consistently estimated by the maximum partial likelihood estimator $\hat{\theta}.$ As $n\to \infty,$
+\[
+  \sqrt n(\hat\theta-\theta)\xrightarrow{d}N(0,\sigma_\theta^2),
+\]
+where
+\begin{equation}\label{eq:var-cox}
+  \sigma_\theta^2
+    =\left\{\int_0^{\tau}
+       \frac{e^{\theta}p_0p_1\,G_0(u)\,G_1(u)}
+            {p_0\,G_0(u)+e^{\theta}p_1\,G_1(u)}\,\dd\Lambda_0(u)
+      \right\}^{-1}.
+\end{equation}
+Under $H_0:\lambda_1(\cdot)=\lambda_0(\cdot)$,
+$$\sigma_\theta^2=\left\{\int_0^{\tau}w(u)\dd\Lambda_0(u)\right\}^{-1},$$
+ and the
+Wald statistic
+\(
+  Z_{\mathrm{Cox}}
+    =\sqrt n\,\hat\theta/\hat\sigma_\theta
+\)
+is asymptotically standard normal, where $\hat{\sigma}_\theta^2$ is a consistent estimator of $\sigma_\theta^2.$
+
+ We use $Z_{\rm Cox}$ for all numerical studies in this paper, whereas its theoretical properties were examined based on an asymptotically equivalent score statistic, i.e., the
+log-rank statistic. The details are given in Section~\ref{sec:wlr} and Appendix~\ref{sec:appendix-weights}.
+
+\paragraph{D-RMST.}
+The \textbf{D-RMST} test is based on the difference between two estimated RMSTs:
+\begin{equation}\label{eq:rmst-stat}
+  \hat\theta_{\DRMST}=\hat R_1(\tau)-\hat R_0(\tau)
+            =\int_0^\tau\bigl[\hat S_1(t)-\hat S_0(t)\bigr]\dd t,
+\end{equation}
+the area between the two Kaplan--Meier curves up to $\tau$
+\citep{Uno2014,survRM2}. Let $\theta_{\DRMST}=R_1(\tau)-R_0(\tau)$ be the true RMST difference. It is a clinically interpretable estimand, and oftentimes preferred when the PH assumption may be violated.  Then, $\hat\theta_{\DRMST}$ is a consistent estimator of $\theta_{\DRMST}$ and
+$\sqrt{n}(\hat\theta_{\DRMST}-\theta_{\DRMST})
+\xrightarrow{d}N(0,\sigma_{\DRMST}^2)$ with
+\begin{equation*}\label{eq:var-rmst}
+  \sigma_{\DRMST}^2
+    =\sum_{k=0}^{1}
+     \int_0^\tau\!\left\{\int_v^\tau S_k(u)\dd u\right\}^{\!2}
+     \frac{\dd\Lambda_k(v)}{p_k\,G_k(v)},
+\end{equation*}
+as $n \to \infty$
+\citep{Tian2018}. Under the null, the Wald statistic
+\(
+  Z_{\DRMST}
+    =\sqrt n\,\hat{\theta}_{\DRMST}/\hat\sigma_{\DRMST}
+\)
+is asymptotically standard normal, where $\hat{\sigma}_{\DRMST}^2$ is a consistent estimator of $\sigma_{\DRMST}^2.$
+
+\paragraph{RAH.}
+The AH for group $k$ on $(0,\tau]$ is
+\begin{equation*}\label{eq:AH}
+  \eta_k(\tau)=\frac{F_k(\tau)}{R_k(\tau)}
+              =\int_0^\tau\lambda_k(t)\,
+               \frac{S_k(t)}{\int_0^\tau S_k(u)\dd u}\dd t,
+\end{equation*}
+a weighted average of hazard function over $[0, \tau]$ \citep{Uno2023}.
+$\eta_k(\tau)$ is a population-level person-time event rate.
+Two properties make
+AH attractive as a robust summary on the hazard scale.  First, $\eta_k(\tau)$ is defined purely through the event-time distribution
+and is therefore not affected by the censoring distribution. On the other hand, the commonly used person-time incidence rate $\Pr(T\le C)/\mathbb{E}(T\wedge C)$ depends on both survival and censoring distributions \citep{Uno2023}.
+Second, AH respects stochastic ordering: if $S_1(t)\ge S_0(t)$ for all
+$t\le\tau$, then $\eta_1(\tau)\le\eta_0(\tau)$.
+The ratio of AH (RAH) between two groups is
+\begin{equation}\label{eq:RAH}
+  \theta_{\RAH}
+    =\frac{\eta_1(\tau)}{\eta_0(\tau)}
+    =\frac{F_1(\tau)/R_1(\tau)}{F_0(\tau)/R_0(\tau)},
+\end{equation}
+with $\theta_{\RAH}=1$ under $H_0$.  Its estimator $\hat\theta_{\RAH}$ can be obtained by
+replacing $F_k(\tau)$ and $R_k(\tau)$ with $1-\hat{S}_k(\tau)$ and $\hat R_k(\tau)$ in \eqref{eq:RAH}, respectively. As $n \to \infty$, $\sqrt{n}(\log\hat\theta_{\RAH}-\log\theta_{\RAH})\xrightarrow{d}N(0,\sigma_{\RAH}^2)$, \citep{Uno2023},
+where
+\begin{equation}\label{eq:var-RAH}
+  \sigma_{\RAH}^2
+    =\sum_{k=0}^{1}
+     \int_0^\tau
+     \!\left\{\frac{1}{F_k(\tau)}-\frac{R_k(u)}{R_k(\tau)}\right\}^{\!2}
+     \frac{\dd\Lambda_k(u)}{G_k(u)\,p_k}.
+\end{equation}
+The test statistic $Z_{\RAH}=\sqrt{n}\log(\hat\theta_{\RAH})/\hat\sigma_{\RAH}$
+is asymptotically $N(0,1)$ under $H_0$, where $\hat{\sigma}_{\RAH}^2$ is a consistent estimator of $\sigma^2_{\RAH}.$
+
+\subsection{Weighted-log-rank representation}
+\label{sec:wlr}
+
+All three statistics, to the first order, can be written as a weighted contrast of
+Nelson--Aalen cumulative-hazard estimates from two groups:
+\begin{equation}\label{eq:wlr-generic}
+  U_W=\int_0^\tau W(t)d\hat{\Delta}_\Lambda(t),
+\end{equation}
+ where
+\[
+  \hat{\Delta}_\Lambda(v)=\hat\Lambda_1(v)-\hat\Lambda_0(v).
+\]
+Under $H_0,$ the two cumulative hazards coincide and $U_W$ has mean zero. The
+weight $W(\cdot)$ decides which time periods contribute to the comparison, and
+choosing $W(\cdot)$ to match the anticipated alternative is the classical route to
+constructing powerful, distribution-free survival tests \citep{FlemingHarrington1991,Tian2018}. Rigorous arguments for expressing three aforementioned test statistics in this form can be found in Appendix~\ref{sec:appendix-weights}.
+
+\paragraph{HR.}
+The log-rank statistic, the score statistic under Cox model, can be written as
+\begin{equation}\label{eq:cox-stat}
+  U_{\mathrm{Cox}}
+    =\int_0^\tau \frac{p_1p_0\hat{G}_1(t)\hat{G}_0(t)}{p_1\hat{G}_1(t)+p_0\hat{G}_0(t)}
+     d\hat{\Delta}_\Lambda(t).
+\end{equation}
+ Under
+the local alternatives considered in section \ref{sec:efficiency}, a one-step expansion of the score function from the partial likelihood function around $\theta=0$ yields that
+$\sqrt n\,\hat\theta=\sigma_\theta^2\sqrt n\,U_{\mathrm{Cox}}+o_p(1)$. Thus, the Wald statistic,  $Z_{\mathrm{Cox}}$ and the normalized $\sqrt{n}U_{\mathrm{Cox}}$ are asymptotically equivalent. Furthermore,
+the random weight in \eqref{eq:cox-stat} converges to at-risk weight $w(\cdot)$ in
+\eqref{eq:w} in probability, as $n \to \infty,$
+
+\paragraph{D-RMST and RAH.}
+Neither statistic is a log-rank type statistic by construction, but each is a
+smooth functional of $\hat\Lambda_1(\cdot)$ and
+$\hat\Lambda_0(\cdot)$.
+For D-RMST, $R(\Lambda)=\int_0^\tau \exp\{-\Lambda(t)\}\dd t$, and
+\begin{align*}
+\hat{\theta}_{\DRMST}
+=&\int_0^\tau S_0(t)\left[\exp\left\{-\hat{\Delta}_\Lambda(t)\right\}-1\right]\dd t+O\bigl(\|\hat{\Delta}_\Lambda\|^2\bigr)\\
+=& -\int_0^\tau S_0(t)\,\hat{\Delta}_\Lambda(t)\dd t +O\bigl(\|\hat{\Delta}_\Lambda\|^2\bigr)\\
+=&-\int_0^\tau \left\{R_0(\tau)-R_0(t)\right\}d\hat{\Delta}_\Lambda(t)+O\bigl(\|\hat{\Delta}_\Lambda\|^2\bigr) \\
+=&-U_{\DRMST}+O_p\bigl(n^{-1}\bigr)
+\label{eq:drmst-expansion}
+\end{align*}
+under local alternative. As the remainder is $O_p(n^{-1})$, $Z_{\DRMST}$ and the normalized $\sqrt{n}U_{\DRMST}$ are asymptotically equivalent.  RAH can be handled the same way, with an extra delta-method step for the ratio $F_k(\tau)/R_k(\tau)$, and
+\begin{align*}
+\log(\hat{\theta}_{\RAH})=& \int_0^\tau \left[\frac{S_0(\tau)}{F_0(\tau)}
+              +\frac{ R_0(\tau)-R_0(t)}{R_0(\tau)}\right]d\hat{\Delta}_\Lambda(t)+O\bigl(\|\hat{\Delta}_\Lambda\|^2\bigr)\\
+              =& U_{\RAH}+O_p(n^{-1})
+\end{align*}
+under local alternative. As a result, $Z_{\RAH}$ and the normalized $\sqrt{n}U_{\RAH}$ are asymptotically equivalent.
+
+\medskip
+In summary, under equal allocation and a common censoring assumption, the
+resulting weights for $U_{\mathrm Cox}$, $U_{\DRMST}$ and $U_{\RAH}$ are
+\begin{align*}
+  W_{\mathrm{Cox}}(t)
+    &=\;S_0(t)\,S_C(t)/4,\\
+  W_{\DRMST}(t)
+    &= R_0(\tau)-R_0(t), \mbox{ and}\\
+  W_{\RAH}(t)
+    &= \left[\frac{S_0(\tau)}{F_0(\tau)}
+              +\frac{ R_0(\tau)-R_0(t)}{R_0(\tau)}\right],
+\end{align*}
+respectively. Since multiplying the weight function by any nonzero constant yields an equivalent test statistic, without loss of generality, we may use following equivalent weight functions
+\begin{align*}
+  W_{\mathrm{Cox}}(t)=&S_0(t)\,S_C(t)\\
+  W_{\DRMST}(t)=&\frac{ R_0(\tau)-R_0(t)}{R_0(\tau)}\\
+  \mbox{ and }~
+  W_{\RAH}(t)=&S_0(\tau)+\left\{1-S_0(\tau)\right\}W_{\DRMST}(t)
+\end{align*}
+for three test statistics.
+On the current scale, all three weights equal $1$ at $t=0$, their limits at
+$t=\tau$ are $S_0(\tau)S_C(\tau)$, $0$, and $S_0(\tau)$. Also, weight for $U_{\RAH}$ is a simple linear transformation of that for $U_{\DRMST}$.
+
+The Cox model-based log-rank weight tracks the amount of information in the risk set. It is the largest early in follow-up, when the risk set is large, and decreases over time as deaths and censoring deplete the risk set. Under the PH assumption, this weighting is optimal. The D-RMST weight represents the RMST within the window \([t, \tau]\). It also places greater weight on earlier follow-up, which decreases monotonically to zero at \(\tau\), thereby also down-weighting survival differences in late follow-up. The weight for RAH is likewise monotone decreasing, but remains strictly positive at \(\tau\), and therefore places relatively greater emphasis on late-stage survival differences than the weight function for D-RMST. This common representation allows us to formally examine the test efficiency in the next section.
+
+
+
+
+
+\subsection{Asymptotic efficiency}
+\label{sec:efficiency}
+
+To compare the three tests on a single scale we use the
+\emph{Pitman efficacy}, the standard local-power measure for asymptotically
+normal tests \citep{Pitman1949}.  Following \citet{Tian2018}, we embed the
+two-sample problem in a sequence of contiguous (local) alternatives indexed
+by a fixed log-hazard-ratio shape $\alpha(\cdot)$ on $(0,\tau]$,
+\begin{equation}\label{eq:local-alt-main}
+  H_{An}:\qquad
+  \log\!\left\{\frac{\lambda_{1n}(t)}{\lambda_0(t)}\right\}
+    =\frac{\alpha(t)}{\sqrt{n}},
+\end{equation}
+so that the two hazards coincide as $n\to\infty,$ while the between-group difference is in the order of $O(1)$.  Under \eqref{eq:local-alt-main}, for
+test $X\in\{\mathrm{Cox},\DRMST,\RAH\},$ the test statistic is asymptotically normal, i.e.,
+\begin{equation*}
+  \sqrt{n}\,U_X\xrightarrow{d}N\!\bigl(\mu_X,\;\sigma_X^2\bigr),
+\end{equation*}
+where
+\begin{equation*}
+  \mu_X=\int_0^\tau W_X(t)\,\alpha(t)\,\lambda_0(t)\dd t
+  \qquad\mbox{and}\qquad
+  \sigma_X^2=\int_0^\tau \frac{W_X(t)^2}{w(t)}\,\lambda_0(t)\dd t .
+\end{equation*}
+The drift $\mu_X$ is obtained by substituting
+$\sqrt n \hat\Delta_{\Lambda}(t)$ by $\alpha(t)\lambda_0(t)$ in \eqref{eq:wlr-generic}. The variance $\hat{\sigma}_X^2$ is the null variance of
+\eqref{eq:wlr-generic}.
+The \emph{asymptotic efficiency} (AE), or Pitman
+efficacy, of test $X$ is the squared standardized drift
+\begin{equation}\label{eq:efficacy-def}
+  \xi_X=\frac{\mu_X^2}{\sigma_X^2},
+\end{equation}
+which governs the local power. The derivation of $\mu_X$ for RAH-based test can be found in Appendix \ref{sec:appendix-proofs}. Furthermore, the
+explicit expressions of
+$\xi_{\mathrm{Cox}},$ $\xi_{\DRMST}$ and $\xi_{\RAH}$ are provided in Appendix \ref{sec:appendix-pitman}.
+The \emph{asymptotic relative efficiency} (ARE) of test $X$ versus test $Y$
+is the ratio of corresponding AEs:
+\begin{equation}\label{eq:are-def}
+  \mathrm{ARE}(X,Y)=\frac{\xi_X}{\xi_Y},
+\end{equation}
+which approximates the inverse ratio of the sample sizes the two tests
+require to reach the same local power against \eqref{eq:local-alt-main};
+$\mathrm{ARE}(X,Y)>1$ means that test $X$ is more efficient and needs proportionally fewer subjects than $Y$ \citep{Tian2018,Pitman1949}.  Because ARE may be a poor proxy for the sample size ratio in finite-sample setting, we also report the \emph{empirical relative efficiency} (ERE), the
+ratio of squared standardized effect sizes estimated by simulation (Section~\ref{sec:sim}),
+\begin{equation}\label{eq:ere-def}
+  \mathrm{ERE}(X,Y)
+    =\frac{E(U_X)^2/\mathrm{Var}(U_X)}
+          {E(U_Y)^2/\mathrm{Var}(U_Y)},
+\end{equation}
+with the expectations and variances approximated by their Monte Carlo averages in simulation
+\citep{Tian2018}.
+
+
+\section{The geometric interpretation of AE}
+\label{sec:cosine}
+Section~\ref{sec:wlr} reduced all three tests to the weighted logrank test~\eqref{eq:wlr-generic} and showed that their AE depends on the test only through the weight function.  This is the basis
+of the classical comparison of \citet{Tian2018}, who contrast the Cox and
+D-RMST tests by inspecting their weight functions $W_{\mathrm{Cox}}(\cdot)$ and
+$W_{\DRMST}(\cdot)$ directly. In this section, we replace the side-by-side weight comparison with a geometric quantity, a cosine, turning AE into an angle in a function space.
+
+
+\subsection{Signal direction and test direction}
+\label{sec:directions}
+
+Suppose that all candidate statistics are evaluated on the same horizon $\tau$, and consider the function space $L^2([0,\tau], \lambda_0(v)\dd v)$, where the inner product
+\begin{equation}\label{eq:inner-product}
+  \langle f,g\rangle=\int_0^\tau f(v)\,g(v)\,\lambda_0(v)\dd v,
+ \end{equation}
+and norm $\|f\|^2=\langle f,f\rangle .$ Next, we
+define the \emph{signal direction} for local alternative $\alpha(\cdot)/\sqrt{n}$ and \emph{test direction} for test $X\in\{\mathrm{Cox},\DRMST,\RAH\}$, as
+\begin{equation}\label{eq:directions}
+  s_\alpha(t)=\alpha(t)\sqrt{w(t)}\qquad \mbox{and} \qquad
+  h_X(t)=\frac{W_X(t)}{\sqrt{w(t)}},
+\end{equation}
+respectively.
+
+The signal direction, $s_\alpha(t),$ describes where the detectable treatment effect is by combining the local log-HR representing the underlying between-group difference at $t$ and $\sqrt{w(t)}$ representing the amount of information available to detect the difference at time $t$.  Thus, $s_\alpha(t)$ is large where the true effect is big and sufficient information is available to detect it. It is a ``direction'' since only its shape over $t$, not its overall magnitude, matters. The test direction, $h_X(t)=W_X(t)/\sqrt{w(t)},$ is the analogous
+object built from the test's own weight.  $W_X(\cdot)$ records where the test is
+prepared to look for the effect. $\sqrt{w(t)}$ in the denominator ensures that $h_X(t)$ represents test weight per unit of information available at time $t$. Next, we have
+\[
+  \langle s_\alpha,h_X\rangle
+    =\int_0^\tau \alpha(t)\sqrt{w(t)}\,\frac{W_X(t)}{\sqrt{w(t)}}\,
+      \lambda_0(t)\dd t
+    =\int_0^\tau W_X(t)\,\alpha(t)\,\lambda_0(t)\dd t=\mu_X,
+\]
+\[
+  \|h_X\|^2
+    =\int_0^\tau \frac{W_X(v)^2}{w(v)}\,\lambda_0(v)\dd v=\sigma_X^2 ,
+\]
+Consequently the AE \eqref{eq:efficacy-def}
+\begin{equation}\label{eq:eff-inner}
+  \xi_X=\frac{\langle s_\alpha,h_X\rangle^2}{\|h_X\|^2}.
+\end{equation}
+
+\subsection{The cosine metric}
+\label{sec:cosine-metric}
+
+Writing the inner product in \eqref{eq:eff-inner} as
+
+$$
+\langle s_\alpha,h_X\rangle=\|s_\alpha\|\,\|h_X\|\cos(\theta_X),
+$$
+or equivalently,
+\begin{equation}\label{eq:eff-cos}
+\cos^2(\theta_X)=\frac{\langle s_\alpha,h_X\rangle^2}
+{\|s_\alpha\|^2\|h_X\|^2}
+=\frac{\xi_X}{\|s_\alpha\|^2},
+\end{equation}
+where \(\theta_X\) denotes the angle between the signal direction \(s_\alpha\) and the test direction \(h_X\). Intuitively, \(\theta_X\) measures the mismatch between where the test places its weight and where the detectable treatment effect is concentrated: a small \(\theta_X\) indicates good alignment and  high local power. The quantity \(\|s_\alpha\|^2\) is the AE of the oracle test using the optimal weight \(\alpha(t)w(t)\). Therefore, $\cos^2(\theta_X)$ is the ARE of test \(X\) relative to the oracle test, $O$. In general, the ARE of test $X$ vs test $Y$ can be expressed as
+\begin{equation}\label{eq:are-cosine}
+  \mathrm{ARE}(X, Y)=\frac{\cos^2(\theta_X)}{\cos^2(\theta_Y)}=\frac{\mathrm{ARE}(X, O)}{\mathrm{ARE}(Y, O)}.
+\end{equation}
+
+
+
+\medskip
+As a preview, Figure~\ref{fig:cosine-geometry} provides geometric representations for three data-generating processes considered in \citep{Tian2018}. Specifically, the left column displays \(s_\alpha(t)\), \(h_{\mathrm{Cox}}(t)\), \(h_{\mathrm{DRMST}}(t)\), and \(h_{\mathrm{RAH}}(t)\), whereas the right column depicts the corresponding directions on a compass, with the signal direction fixed at 12 o'clock and each test's \(\cos^2\theta_X\) shown at the tip of the corresponding arrow for test direction. More detailed results are presented in Section~\ref{sec:sim}.
+
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.95\linewidth]{output/figures/cosine/paper/fig-cosine-geometry.pdf}
+  \caption{Unit-vector functions (left column) and compass diagrams
+  (right column) for three scenarios
+  (Weibull baseline: $\kappa=0.826$, $S_0(40)=0.50$, light censoring).
+  The D-RMST and RAH tests are evaluated at
+  $\tau=40$ months;
+  Signal direction is placed at 12 o'clock in the compass diagrams;
+  each test arrow is annotated with its $\cos^2(\theta_X)$ value.
+  Under PH (top), Cox is aligned,  while D-RMST and RAH lose some efficiencies.
+  Under delayed benefit (bottom), the signal rotates toward the RAH
+  direction, raising $\cos^2(\theta_{\RAH})$ above
+  $\cos^2(\theta_{\mathrm{Cox}})$.}
+  \label{fig:cosine-geometry}
+\end{figure}
+
+The cosine metric naturally applies at the trial design stage. Suppose that one has access to:
+\begin{itemize}
+\item assumed survival functions $S_0(t)$ and $S_1(t)$;
+\item assumed treatment-effect $\alpha(t)$ (e.g., PH, delayed
+benefit, et al.);
+\item planned censoring and accrual distribution (which affects $w(\cdot)$); and
+\item a set of test statistics.
+\end{itemize}
+Given these inputs, one can compute the signal and test directions and $\cos^2(\theta_X)$ for each candidate test and select the test with the highest $\cos^2(\theta_X)$, the one most aligned with the expected signal. Crucially, censoring and accrual are part of trial design and affect the value of $\cos^2(\theta_X).$ By varying $S_C(t)$, one can trace how the cosine metric changes and understand whether the selected test is robust to design assumptions. We demonstrate this in Section~\ref{sec:cm057-analysis} for CheckMate~057, and specifically trace the preferred test across design choices in a sensitivity analysis.
+
+
+
+
+\section{Simulation Study}
+\label{sec:sim}
+
+\subsection{Design}
+\label{sec:sim-design}
+
+We compare the Cox, D-RMST, and RAH-based tests via ARE and ERE using the
+same data-generating process of \citet{Tian2018}.
+The baseline event-time distribution is Weibull($\kappa$, $\eta_0$)
+with scale parameter $\eta_0$ chosen so that $S_0(40)$ equals a specified target survival rate at  $\tau=40$ months and the default shape parameter $\kappa=0.826$ yielding a decreasing hazard
+$\lambda_0(t)\propto t^{-0.174}$.
+Censoring time $C=\min(E,U)$, where $E\sim\mathrm{Exp}(\lambda_c)$ and
+$U\sim\mathrm{Uniform}(24,43)$ represent loss of follow-up and random entry, respectively. Two rates $\lambda_c\in\{0.0006,0.025\}$ for $E$
+yield light ($S_C(40)=0.15$) and heavy ($S_C(40)=0.04$)
+censoring.
+Sample size $n_0=n_1=400$ per arm; $B=2000$ replicates are used for each simulation. We consider the following alternatives:
+
+\noindent\textbf{PH scenario (Case 1):}
+The event-time distribution in the treatment group is Weibull$(\kappa, \eta_1)$, where $\eta_1=\eta_0/0.70^{1/\kappa}$ yields a HR of 0.70. $\eta_0$ is adjusted so that
+$S_0(40)=0.10,\ldots,0.80$ and 0.9.
+
+\medskip
+\noindent\textbf{Non-PH scenarios:}
+$\kappa=0.826$ and
+$S_0(40)=0.50$ for control subjects. The log-HR $\alpha(t)=\log[\lambda_1(t)/\lambda_0(t)]$
+follows two patterns:
+\begin{itemize}
+  \item \textbf{Case~2 (fading benefit):}
+    $\alpha(t)=-c_0\max(43-t,\,0)^s, s\in \{0.5, 1, 2\}$.
+    The treatment benefit is the biggest early and fades to null at month 43.
+  \item \textbf{Case~3 (delayed benefit):}
+    $\alpha(t)=-c_0t^s,  s\in \{0.5, 1, 2\}$.
+    The treatment benefit is absent at $t=0$ and increases over follow-up.
+\end{itemize}
+In both cases $c_0>0$ is selected so that the mean log-HR over $[0,\tau]$ is approximately $\log(0.70)$. For Cases 2 and 3,  event-times in treatment arm are generated by numerical inversion of the cumulative hazard, i.e., $T_1 \sim \Lambda^{-1}_1\{\mbox{Exp}(1)\}.$
+
+Figures~\ref{fig:dgp-ph}, \ref{fig:dgp-case2}, and~\ref{fig:dgp-case3}
+display the survival curves and HRs for there
+cases.
+Each figure uses a four-panel layout: the top-left panel shows
+$\exp\{\alpha(t)\}$ (the HR), and the
+remaining panels show $S_0(t)$ (control, solid) against $S_1(t)$
+(treatment, dashed) for different values of $s$.
+
+
+Three simulation settings are also studied:
+\begin{enumerate}
+\item the PH setting with a HR=0.82 (Appendix ~\ref{sec:appendix-hr082});
+\item the PH setting with alternative baseline survival distributions (Weibull$(\kappa, \eta_0)$ with \(\kappa=0.7, 1\) and 1.5), sample size (150 per arm), and trial horizon $(\tau=10)$ month (Appendix~\ref{sec:appendix-tau10});
+\item the crossing-hazard setting with $\alpha(t)=\log(0.46)+(t/43)$ (the HR begins below~1 and rises to 1.25 at month 43) (Appendix~\ref{sec:appendix-crossing}).
+\end{enumerate}
+
+\medskip
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.95\linewidth]{output/figures/dgp/paper/dgp_ph.pdf}
+  \caption{\textbf{PH scenario} (HR $= 0.70$) and
+    $S_0(\tau)\in\{0.10, 0.30, 0.70\}$.
+    The HR is flat at 0.70; higher event rates produce greater absolute separation between two survival curves.}
+  \label{fig:dgp-ph}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.95\linewidth]{output/figures/dgp/paper/dgp_case2.pdf}
+  \caption{\textbf{Case~2: fading benefit.}
+    $\alpha(u)=-c_0\,\max(t_M-u,0)^s$,  mean log-HR $=\log(0.70)$.
+    The HR is below 1 early and converges to 1 by $t_M$; larger $s$
+    concentrates the benefit closer to $u=0$.}
+  \label{fig:dgp-case2}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.95\linewidth]{output/figures/dgp/paper/dgp_case3.pdf}
+  \caption{\textbf{Case~3: delayed benefit.}
+    $\alpha(u)=-c_0\,u^s$, mean log-HR $=\log(0.70)$.
+    The HR starts at 1 and decreases; larger $s$ delays the onset of the
+    treatment effect, with the benefit concentrated at later time points for $s=2$.}
+  \label{fig:dgp-case3}
+\end{figure}
+
+\subsection{PH scenario (Case 1)}
+\label{sec:sim-ph}
+
+Table~\ref{tab:main-sim-ph-hr070-s0-010-090-light-heavy} summarizes the comparison for \(S_0(40)\in\{0.10,\ldots,0.90\}\), \(\kappa=0.826\), and \(\mathrm{HR}=0.70\). Under light censoring, the ARE of the D-RMST-based test relative to the Cox model-based test decreases gradually from 0.99 to 0.90 as \(S_0(40)\) increases. Under heavy censoring, however, this ARE remains close to 1.0 across the full range of \(S_0(40)\).
+
+The ARE of the RAH-based test relative to the Cox model-based test is also below 1 throughout. This is expected as the Cox model-based test is optimal under PH assumption. Under light censoring, it decreases from 0.94 to 0.83 as \(S_0(40)\) increases. This pattern is expected. As \(S_0(\tau)\) increases, the lower bound
+$W_{\RAH}(\tau)=S_0(\tau)$ becomes larger, so that $
+h_{\RAH}(\tau)=2
+\sqrt{S_0(\tau)/S_C(\tau)}$
+also increases. This inflates \(\|h_{\RAH}\|^2\) and enlarges RAH's discrepancy from the optimal test direction. Under heavy censoring, this loss of efficiency is more pronounced: the ARE decreases from 0.81 at \(S_0(40)=0.10\) to 0.64 at \(S_0(40)=0.90\), because a larger \(S_0(\tau)\) inflates \(\|h_{\RAH}\|^2\) even more rapidly, when \(S_C(\tau)\) is small.  In summary, the efficiency loss from using the RAH-based test is modest under light censoring, with a maximum of approximately 17\%, but can reach about 37\% under heavy censoring. The ordering
+$$
+\mathrm{Cox}\ge \RAH \approx \DRMST
+$$
+under PH with light censoring and small \(S_0(\tau)\) is also evident geometrically in Figure~\ref{fig:cosine-geometry} (top row): the signal direction is aligned with the Cox model-based test direction, whereas the RAH and D-RMST test directions are more off-axis.
+
+The ARE of the RAH-based test relative to the D-RMST-based test is close to 1 under light censoring, but ranges from approximately 0.64 to 0.81 under heavy censoring, indicating a more substantial performance separation between two testing procedures.
+
+
+
+Table~\ref{tab:main-sim-ph-hr070-kappa-050-200-light-heavy} reports results for \(S_0(40)=0.50\) and \(\kappa\in\{0.5,0.826,1,1.5,2\}\). The ARE of the RAH-based test relative to the Cox model-based test decreases from 0.92 when \(\kappa=0.5\), corresponding to a decreasing baseline hazard, to 0.73 when \(\kappa=2\), corresponding to an increasing baseline hazard. Intuitively, an increasing hazard shifts more events toward later follow-up, where RAH weighting differs more substantially from optimal weighting of Cox model-based test, thereby reducing its efficiency.
+
+Both Tables~\ref{tab:main-sim-ph-hr070-s0-010-090-light-heavy} and~\ref{tab:main-sim-ph-hr070-kappa-050-200-light-heavy} show systematically larger efficiency losses for the RAH-based test under heavy censoring than under light censoring. This pattern persists across alternative baseline survival distributions and trial horizons.
+
+In summary, these results show that the ARE of the competing tests depends materially on the censoring distribution. The censoring and accrual patterns induced by the study design should not be viewed merely as nuisance features; rather, they are important design inputs for choosing testing procedures.
+
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Theoretical ARE and empirical ERE under PH (HR$=0.70$), Tian DGP.
+  Weibull baseline ($\kappa=0.826$), $\tau=40$.
+  Notation: R/C $=$ RMST/Cox, A/C $=$ RAH/Cox, A/R $=$ RAH/RMST.
+  $N=400$ per arm, $B=2000$.}
+\label{tab:main-sim-ph-hr070-s0-010-090-light-heavy}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llccccc}
+\hline
+& & \multicolumn{5}{c}{$S_0(40)$} \\
+\cline{3-7}
+Censoring & Metric & 0.10 & 0.30 & 0.50 & 0.70 & 0.90 \\
+\hline
+  \multirow{6}{*}{Light} & ARE(R/C) & 0.992 & 0.964 & 0.939 & 0.916 & 0.897 \\
+   & ARE(A/C) & 0.940 & 0.896 & 0.868 & 0.847 & 0.831 \\
+   & ARE(A/R) & 0.947 & 0.929 & 0.924 & 0.924 & 0.927 \\
+   & ERE(R/C) & 1.015 & 0.967 & 0.966 & 0.931 & 0.930 \\
+   & ERE(A/C) & 0.916 & 0.869 & 0.865 & 0.851 & 0.813 \\
+   & ERE(A/R) & 0.902 & 0.899 & 0.895 & 0.914 & 0.874 \\
+\hline
+  \multirow{6}{*}{Heavy} & ARE(R/C) & 0.982 & 0.996 & 0.996 & 0.993 & 0.987 \\
+   & ARE(A/C) & 0.797 & 0.719 & 0.679 & 0.653 & 0.634 \\
+   & ARE(A/R) & 0.812 & 0.722 & 0.682 & 0.658 & 0.642 \\
+   & ERE(R/C) & 0.989 & 1.024 & 1.014 & 1.014 & 1.035 \\
+   & ERE(A/C) & 0.767 & 0.674 & 0.716 & 0.663 & 0.666 \\
+   & ERE(A/R) & 0.775 & 0.658 & 0.707 & 0.654 & 0.643 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
+
+\begin{table}[ht]
+\centering
+\small
+\caption{ARE and ERE under PH (HR$=0.70$), varying Weibull shape.
+  $S_0(40)=0.50$, $\tau=40$, $N=400$ per arm, $B=2000$.}
+\label{tab:main-sim-ph-hr070-kappa-050-200-light-heavy}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llcccccc}
+\hline
+$\kappa$ & Censoring & ARE(R/C) & ARE(A/C) & ARE(A/R) & ERE(R/C) & ERE(A/C) & ERE(A/R) \\
+\hline
+0.500 & light & 0.960 & 0.920 & 0.959 & 0.971 & 0.923 & 0.951 \\
+0.500 & heavy & 0.995 & 0.750 & 0.753 & 1.025 & 0.751 & 0.733 \\
+0.826 & light & 0.939 & 0.868 & 0.924 & 0.973 & 0.847 & 0.870 \\
+0.826 & heavy & 0.996 & 0.679 & 0.682 & 1.019 & 0.682 & 0.669 \\
+1.000 & light & 0.930 & 0.840 & 0.904 & 0.951 & 0.827 & 0.870 \\
+1.000 & heavy & 0.995 & 0.651 & 0.654 & 1.021 & 0.627 & 0.614 \\
+1.500 & light & 0.913 & 0.776 & 0.850 & 0.927 & 0.772 & 0.833 \\
+1.500 & heavy & 0.990 & 0.597 & 0.603 & 1.000 & 0.591 & 0.590 \\
+2.000 & light & 0.905 & 0.730 & 0.806 & 0.917 & 0.731 & 0.797 \\
+2.000 & heavy & 0.984 & 0.567 & 0.576 & 1.002 & 0.573 & 0.572 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\subsection{Non-PH: fading benefit (Case 2)}
+\label{sec:sim-fading}
+
+Table~\ref{tab:main-sim-nonph} presents the two monotone non-PH scenarios with $\kappa=0.826$, $S_0(40)=0.50$, and $s=1$. Under Case~2, the D-RMST-based test slightly outperforms the RAH-based test, with the Cox model-based test performing intermediately, i.e.,
+$$ \DRMST\ge \rm{Cox}\ge \RAH.$$
+Because the treatment effect is concentrated in the early follow-up period, the down-weighting of late differences by D-RMST causes little efficiency loss. In contrast, the RAH-based test continues to assign positive weight to late follow-up times, where the treatment effect has largely disappeared. This leads to the expected ordering, D-RMST $\geq$ Cox $\geq$ RAH. The corresponding geometric interpretation is shown in the middle row of Figure~\ref{fig:cosine-geometry}.
+
+
+\subsection{Non-PH: delayed benefit (Case 3)}
+\label{sec:sim-delayed}
+
+Under Case~3, the ARE of the RAH-based test relative to the Cox model-based test exceeds 1 under both censoring regimes. The treatment effect is concentrated at late time, whereas the weight for D-RMST approaches zero near $\tau$, effectively down-weighting the events in the most informative time window. The Cox model also assigns decreasing weight to later follow-up times, as its weight function $w(t)$ declines, but this down-weighting is less pronounced than that of D-RMST. In contrast, the RAH-based test maintains a bigger positive weight near $\tau$, as $S_0(\tau)>S_0(\tau)S_C(\tau)>0.$ Therefore, it preserves a greater alignment with the delayed treatment effect, and yields the expected ordering,
+$$\RAH \ge \rm{Cox} \ge  \DRMST.$$
+See Figure~\ref{fig:cosine-geometry} (bottom row) for the corresponding geometric interpretation.
+
+In all simulations, the EREs are close to the corresponding AREs, especially in terms $>1$ vs $<1,$ supporting the validity of ARE under finite sample.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{ARE and ERE under two non-PH patterns, Tian DGP.
+  Parameters: $\kappa=0.826$, $\tau=40$, $S_0(40)=0.50$, $s=1$,
+  $N=400$ per arm, $B=2000$.
+  Rows: light (L) and heavy (H) censoring.}
+\label{tab:main-sim-nonph}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llcccccc}
+\hline
+Case & Cens & ARE(R/C) & ARE(A/C) & ARE(A/R) & ERE(R/C) & ERE(A/C) & ERE(A/R) \\
+\hline
+Case 2 (fading) & L & 1.347 & 0.686 & 0.510 & 1.535 & 0.621 & 0.404 \\
+Case 2 (fading) & H & 1.021 & 0.384 & 0.376 & 1.102 & 0.318 & 0.289 \\
+Case 3 (delayed) & L & 0.615 & 1.169 & 1.901 & 0.634 & 1.171 & 1.849 \\
+Case 3 (delayed) & H & 0.952 & 1.334 & 1.402 & 0.959 & 1.435 & 1.496 \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{CheckMate 057: Analysis and Sensitivity}
+\label{sec:cm057-analysis}
+
+In this section, we illustrate the practical performance of three two-sample tests using data from the CheckMate 057 trial
+\citep{Borghaei2015}.
+To this end, we fit Weibull model to the trial data, compute the
+theoretical ARE for each test, and conduct simulations to compute the empirical power and required sample sizes under the fitted parametric model.
+
+\subsection{Trial background and survival model}
+\label{sec:cm057-background}
+
+The CheckMate 057 data were introduced in Section~\ref{sec:intro};
+The Schoenfeld global test yields $p = 0.001$, providing strong evidence against
+the PH assumption. We therefore fit separate Weibull models to each arm and obtain:
+\begin{align*}
+  \text{Docetaxel (arm 0):} &\quad \kappa_0=1.264,\; \eta_0=13.076\text{ mo}, \\
+  \text{Nivolumab (arm 1):} &\quad \kappa_1=0.987,\; \eta_1=17.320\text{ mo}.
+\end{align*}
+Figure~\ref{fig:weibull} overlays the Kaplan--Meier curves with the fitted Weibull curves, demonstrating their close agreement.
+
+\begin{figure}[ht]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{output/checkmate057/paper/figure-weibull.pdf}
+    \caption{KM curves (solid) and fitted Weibull models (dashed) for
+      docetaxel (black) and nivolumab (red).
+      Parameters estimated by maximum likelihood.}
+    \label{fig:weibull}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{output/checkmate057/paper/cm057-ph-diagnostic.pdf}
+    \caption{Scaled Schoenfeld residuals for the treatment indicator.
+      The negative slope (Schoenfeld global test $p = 0.001$) indicates
+      a time-varying hazard ratio: the nivolumab advantage grows over
+      follow-up.}
+    \label{fig:ph-diag}
+  \end{subfigure}
+  \caption{Survival model fit (left) and proportional-hazards diagnostic (right)
+    for the CheckMate 057 trial.}
+  \label{fig:cm057-combined}
+\end{figure}
+
+
+In the docetaxel arm, $\kappa_0>1$ inducing a monotone increasing
+hazard. In the nivolumab arm,  $\kappa_1\approx1$ indicating an approximately constant hazard. The resulting HR is
+\[
+  \frac{h_1(t)}{h_0(t)}
+  \approx \frac{1.206}{t^{0.277}},
+\]
+which decreases from 1.21 at month 1 to $0.50$ at month 24.   This is a characteristic of immunotherapy and is consistent with the Schoenfeld diagnosis
+(Figure~\ref{fig:ph-diag}), whose negative residual slope indicates a
+decreasing log hazard ratio over time.
+
+\paragraph{Choice of the censoring model}
+Patients were enrolled from November 2012 through December 2013
+(${\approx}13$-month accrual window), and the primary database lock
+occurred on March 18, 2015 \citep{Borghaei2015}, giving minimum and
+maximum follow-up times of approximately 13 and 28 months respectively.
+We therefore model administrative censoring as
+$U\sim \mathrm{Uniform}(13, 28)$ months.
+Additionally, a small fraction of patients withdrew consent in the study or were lost to follow-up \citep{Borghaei2015}; we capture
+this with light exponential dropout, $E \sim \mbox{Exp}(\lambda_c)$ with $\lambda_c = 0.005$/month (${\approx}6\%$ annually). The combined censoring time is $C = \min(E, U)$.
+The D-RMST and RAH tests use $\tau = 24$ months, corresponding to the clinically natural two-year overall survival landmark.
+
+
+
+Table~\ref{tab:cm057-are-ere} presents the ARE and ERE results. Both measures yield the same ordering of the three tests:
+\[
+\RAH \ge \mathrm{Cox} \ge \DRMST.
+\]
+Figure~\ref{fig:cosine-cm057} presents the compass diagram for the CheckMate 057 data. The corresponding squared cosine similarities are
+\[
+\cos^2(\theta_{\mathrm{Cox}})=0.603,\qquad
+\cos^2(\theta_{\DRMST})=0.462,\qquad
+\cos^2(\theta_{\RAH})=0.638.
+\]
+Because the ARE between two tests is given by the ratio of their squared cosine similarities, these values imply
+\[
+\mathrm{ARE}(\RAH/\mathrm{Cox})\approx1.058
+\quad\text{and}\quad
+\mathrm{ARE}(\RAH/\DRMST)\approx1.381.
+\]
+
+Figure~\ref{fig:cosine-cm057} also provides a geometric explanation for why the crossing-hazards alternative favors the RAH-based test. The signal direction places substantial weight on the late follow-up period, where the treatment benefit of nivolumab is greatest. In contrast, the Cox test direction places relatively greater weight on earlier times and gradually decays over follow-up. The D-RMST test direction tapers more rapidly to zero as time approaches $\tau$, thereby placing even less weight on the late follow-up period. The RAH test direction, by comparison, is bounded below by $S_0(\tau)\approx0.12$, allowing it to retain meaningful weight at later times. Consequently, the RAH test direction is more closely aligned with the signal direction, resulting in greater efficiency under this crossing-hazards alternative.
+
+
+\begin{table}[ht]
+\centering
+\caption{Theoretical ARE and empirical ERE ($n=300$ per arm, $B=500$)
+  under the CheckMate 057 non-PH Weibull DGP.
+  D-RMST and RAH evaluated at $\tau=24$ months; Cox at $t_H=26$ months.}
+\label{tab:cm057-are-ere}
+\medskip
+\begin{tabular}{lcc}
+\toprule
+Comparison & ARE (theoretical) & ERE ($n=300$, empirical) \\
+\midrule
+D-RMST vs Cox & 0.906 & 0.883 \\
+RAH vs Cox & 1.178 & 1.232 \\
+RAH vs D-RMST & 1.300 & 1.395 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+
+
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.90\linewidth]{output/figures/cosine/paper/fig-cosine-cm057.pdf}
+  \caption{Unit-vector functions (left) and compass diagram (right)
+  for Weibull distributions fitted to CheckMate 057 trial.
+  D-RMST and RAH use $\tau=24$ months
+  the function panel displays them only on
+  $[0,\tau]$.
+  The signal direction is placed at 12 o'clock and reflects the
+  crossing-hazards pattern. Each test direction is annotated with
+  $\cos^2(\theta_X)$.
+  RAH is closest to the signal direction, followed by Cox and D-RMST.}
+  \label{fig:cosine-cm057}
+\end{figure}
+
+Beyond the efficiency metrics themselves, a key practical question is how differences in ARE translate into differences in power and required sample size. Figure~\ref{fig:power} shows the empirical power as a function of sample size per arm, with the RAH-based test consistently achieving the highest power, followed by the Cox model-based test and then the D-RMST-based test. Table~\ref{tab:cm057-power-n80} summarizes these differences in two ways: power at a fixed sample size of $n_0=n_1=300$ per arm and the minimum sample size required to achieve 80\% power. The RAH-based test achieves 80\% power at approximately 250 patients per arm, compared with approximately 350 and 400 patients per arm for the Cox model- and D-RMST-based tests, respectively. Thus, relative to the RAH-based test, the Cox model- and D-RMST-based tests require approximately 40\% and 60\% more patients, respectively, to achieve the same 80\% power. Conversely, at a fixed sample size of $n_0=n_1=300$ per arm, the empirical power is approximately 85\% for the RAH-based test, 76\% for the Cox model-based test, and only 67\% for the D-RMST-based test.
+
+
+
+ \begin{table}[ht]
+\centering
+\caption{Empirical power at $N=300$ per arm and sample size required
+  for 80\% power under the CheckMate 057 Weibull DGP ($B=2000$ replications,
+  $\tau=24$ months, uniform censoring $[6,30]$ months, dropout rate $0.005$).}
+\label{tab:cm057-power-n80}
+\begin{tabular}{lcc}
+\toprule
+Method & Power ($N=300$/arm) & $N$ for 80\% power \\
+\midrule
+Cox & 0.756 & 350 \\
+D-RMST & 0.688 & 400 \\
+RAH & 0.848 & 250 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.65\textwidth]{output/checkmate057/paper/cm057-power-curve.pdf}
+  \caption{Empirical power for Cox model-(blue,
+    solid), D-RMST- (orange, dashed), and RAH- (green, dotted) for non-PH alternative observed in  CheckMate 057.  Horizontal line: 80\% power.}
+  \label{fig:power}
+\end{figure}
+
+
+
+
+We now assess the robustness of the ordering $\RAH \ge \rm{Cox} \ge \DRMST$
+to the analysis horizon~$\tau$, dropout rate~$\lambda_c$, and assumed alternative. The results are reported in  Table~\ref{tab:sens-are}.
+\begin{enumerate}
+\item {\bf Horizon $\tau$:}
+ARE(D-RMST/Cox) increases substantially with $\tau$, from 0.531 at $\tau=18$ to 0.766 at $\tau=24$. The relatively low efficiency of D-RMST at shorter horizons reflects the truncation of the follow-up period, which ignores a substantial portion of the late treatment benefit of nivolumab. In contrast, ARE(RAH/Cox) remains relatively stable across horizons (0.964--1.110), consistent with the robustness provided by the positive weight floor of RAH. ARE(RAH/D-RMST) exceeds 1.381 across all cases, ranging from 1.30 at $\tau=24$ to 1.82 at $\tau=18$.
+
+\item {\bf Dropout rate:}
+Increasing $\lambda_c$ from 0.001 to 0.020 shifts ARE(D-RMST/Cox) upward from 0.87 to 1.03, indicating that heavier dropout reduces the relative efficiency of the Cox model-based test. This is consistent with the Cox weight function being increasingly attenuated at later times as the censoring survival function $S_C(t)$ decreases. In contrast, ARE(RAH/Cox) remains relatively stable (1.21--1.32). Because the RAH weight floor is not directly affected by censoring, RAH maintains its alignment with the late-concentrated treatment signal as dropout increases. ARE(RAH/D-RMST) declines slightly, from 1.32 to 1.21, under heavier censoring.
+
+\item {\bf PH vs.\ non-PH:}
+Under a PH alternative (HR$=0.75$, with the same Weibull shape as for docetaxel), the Cox model-based test is the most efficient, with ARE(D-RMST/Cox)$=1.00$ and ARE(RAH/Cox)$=0.87$. Both RAH and D-RMST are slightly less efficient than Cox under the PH alternative, highlighting that the efficiency advantage of RAH in the non-PH setting arises from the crossing-hazards structure. This finding is consistent with the geometric interpretation: RAH's weight floor improves alignment with the treatment-effect signal when the signal is concentrated in the late follow-up period, but provides no such advantage when the treatment effect follows a PH pattern.
+\end{enumerate}
+
+In summary, the ERE and ARE results are generally consistent. Under the assumed non-PH alternative, the RAH-based test is more efficient than both Cox model-based and D-RMST-based tests. Under the PH alternative, however, the RAH-based test is slightly less efficient than the Cox model-based test.
+
+ \begin{table}[ht]
+\centering
+\caption{Sensitivity of pairwise ARE (theoretical) and ERE ($n=300$ per arm,
+  $B=500$) to analysis horizon, dropout rate, and hazard structure.
+  The baseline scenario ($\tau=24$, $\lambda_c=0.005$, non-PH) matches
+  Table~\ref{tab:cm057-are-ere} on ARE, ERE differs by Monte-Carlo error.}
+\label{tab:sens-are}
+\medskip
+\begin{tabular}{llcccccc}
+\toprule
+& & \multicolumn{3}{c}{ARE (theoretical)} & \multicolumn{3}{c}{ERE (empirical)} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+Sensitivity & Setting & $\frac{\mathrm{D-RMST}}{\mathrm{Cox}}$ & $\frac{\mathrm{RAH}}{\mathrm{Cox}}$ & $\frac{\mathrm{RAH}}{\mathrm{D-RMST}}$ & $\frac{\mathrm{D-RMST}}{\mathrm{Cox}}$ & $\frac{\mathrm{RAH}}{\mathrm{Cox}}$ & $\frac{\mathrm{RAH}}{\mathrm{D-RMST}}$ \\
+\midrule
+\multirow{3}{*}{Analysis horizon} & $\tau=18$ mo & 0.531 & 0.964 & 1.817 & 0.451 & 0.943 & 2.091 \\
+ & $\tau=21$ mo & 0.731 & 1.110 & 1.519 & 0.676 & 1.145 & 1.694 \\
+ & $\tau=24$ mo & 0.906 & 1.178 & 1.300 & 0.886 & 1.221 & 1.379 \\
+\midrule
+\multirow{3}{*}{Dropout rate} & $\lambda_c=0.001$ & 0.874 & 1.158 & 1.324 & 0.834 & 1.213 & 1.455 \\
+ & $\lambda_c=0.005$ & 0.906 & 1.178 & 1.300 & 0.882 & 1.210 & 1.371 \\
+ & $\lambda_c=0.020$ & 1.032 & 1.246 & 1.207 & 1.058 & 1.461 & 1.381 \\
+\midrule
+\multirow{2}{*}{Hazard structure} & Non-PH (fitted) & 0.906 & 1.178 & 1.300 & 0.874 & 1.295 & 1.483 \\
+ & PH ($\mathrm{HR}=0.75$) & 0.999 & 0.870 & 0.871 & 0.996 & 0.862 & 0.865 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Discussion}
+\label{sec:discussion}
+
+
+This paper has two main contributions: first, to characterize the efficiency of the recently proposed RAH-based test, whose large-sample power properties have not been systematically studied; and second, to develop a geometric interpretation for comparing the efficiency of the Cox model-, D-RMST-, and RAH-based tests. The main message is that no single test uniformly dominates; rather, the most efficient test depends jointly on the underlying pattern of treatment effect and the censoring distribution. The Cox model-based test is most efficient under the PH assumption. The D-RMST-based test is particularly well suited for detecting fading treatment effects, as it places greater weight on early survival differences. In contrast, the RAH-based test is particularly attractive for detecting delayed treatment benefits, a pattern that has been repeatedly observed in studies of immunotherapy in oncology. In addition, the censoring and accrual designs can substantially affect the relative performance of these tests. These effects can be readily visualized through the proposed cosine metrics, which quantify the alignment between the underlying treatment-effect signal and the directions targeted by each test. In practice, the cosine metric is best used to compare candidate tests across a range of plausible scenarios rather than to commit to one in advance in the study design.
+
+
+
+
+
+
+
+
+Several extensions are natural. The cosine metric could be used as an objective function for optimizing accrual and follow-up duration, rather than merely as a diagnostic for comparing prespecified tests. In addition, because $W_{\RAH}$ is not a Fleming--Harrington weight \citep{FlemingHarrington1991}, incorporating it alongside $W_{\mathrm{Cox}}$ and $W_{\DRMST}$ in a Max-combo test would broaden the class of treatment-effect alternatives that can be effectively detected.
+
+
+\appendix
+
+\section{Asymptotic Distribution of the RAH Statistic}
+\label{sec:appendix-proofs}
+
+\subsection{Local-alternative drift}
+Throughout we work under \emph{Pitman contiguous alternatives}:
+\begin{equation}\label{eq:local-alt}
+  H_{An}:\quad
+  \log\frac{\lambda_{1n}(t)}{\lambda_0(t)}=\frac{\alpha(t)}{\sqrt{n}},
+\end{equation}
+where $\alpha(\cdot)$ is a fixed function on $(0,\tau]$.
+Under~\eqref{eq:local-alt}, to first order in $n^{-1/2}$:
+$\sqrt{n}[S_{1n}(t)-S_0(t)]\to-S_0(t)\int_0^t\lambda_0(u)\alpha(u)\dd u$.
+
+\begin{proposition}\label{prop:mean-rah}
+Under $H_{An}$, $\sqrt{n}\log(\hat\theta_{\RAH})$ is asymptotically normal
+with mean
+\begin{equation}\label{eq:mean-RAH-compact}
+  \mu_{\RAH}
+    =\int_0^\tau
+       \!\left[\frac{1}{F_0(\tau)}-\frac{R_0(t)}{R_0(\tau)}\right]
+       \alpha(t)\lambda_0(t)\dd t.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+ $\sqrt{n}\log(\hat\theta_{\RAH})=U_n+V_n$,
+where $U_n=\sqrt{n}[\log\hat F_1(\tau)-\log\hat F_0(\tau)]$
+and $V_n=-\sqrt{n}[\log\hat R_1(\tau)-\log\hat R_0(\tau)]$.
+Next, we have
+\begin{align*}
+  U_n &= F_0(\tau)^{-1}\sqrt{n}[\hat F_1-\hat F_0](\tau)+o_p(1)\\
+      &=F_0(\tau)^{-1}\sqrt{n}[F_1-F_0](\tau)-F_0(\tau)^{-1}\sqrt{n}[(\hat S_1- S_1)-(\hat S_0-S_0)](\tau)+o_p(1)\\
+      &=\int_0^\tau\frac{S_0(\tau)}{F_0(\tau)}\alpha(t)\lambda_0(t)\dd t+\eta_{1n}+o_p(1),
+\end{align*}
+and
+\begin{align*}
+V_n &= -R_0(\tau)^{-1}\int_0^\tau\sqrt{n}[\hat S_1(t)-\hat S_0(t)]\dd t +o_p(1)\\
+    &= -R_0(\tau)^{-1}\int_0^\tau\sqrt{n}[S_1(t)-S_0(t)]\dd t +R_0(\tau)^{-1}\int_0^\tau\sqrt{n}\left[(\hat{S}_1-S_1)-(\hat{S}_0-S_0)\right](t)\dd t+o_p(1)\\
+    &=R_0(\tau)^{-1}\int_0^\tau S_0(t)A(t)\dd t+\eta_{2n}+o_p(1),
+\end{align*}
+where $A(t)=\int_0^t\lambda_0(u)\alpha(u)\dd u$ and $(\eta_{1n}, \eta_{2n})'$ converging in distribution to a mean zero bivariate Gaussian distribution as $n\to \infty.$  Furthermore,
+\[R_0(\tau)^{-1}\int_0^\tau S_0(t) A(t)\dd t=A(\tau)-\int_0^\tau\lambda_0(t)\alpha(t) \frac{R_0(t)}{R_0(\tau)}\dd t=\int_0^\tau \left[1-\frac{R_0(t)}{R_0(\tau)}\right]\alpha(t)\lambda_0(t)dt.\]
+Substituting and simplifying gives~\eqref{eq:mean-RAH-compact}.
+\end{proof}
+
+\subsection{Pitman efficacy of RAH-based test}
+\label{sec:appendix-pitman}
+The Pitman efficacy formula follows from $\xi_{\RAH}=\mu_{\RAH}^2/\sigma_{\RAH}^2$:
+\begin{equation}\label{eq:eff-RAH}
+  \xi_{\RAH}
+    =\frac{\displaystyle
+      \left[\int_0^\tau\!\left\{\dfrac{1}{F_0(\tau)}-\dfrac{R_0(t)}{R_0(\tau)}\right\}
+            \alpha(t)\lambda_0(t)\dd t\right]^{\!2}}{
+      \displaystyle
+      \int_0^\tau\!\left\{\dfrac{1}{F_0(\tau)}-\dfrac{R_0(t)}{R_0(\tau)}\right\}^{\!2}
+      \dfrac{\lambda_0(t)}{w(t)}\dd u}.
+\end{equation}
+The efficacies of Cox and D-RMST follow from \citet{Tian2018}:
+\begin{equation}\label{eq:eff-Cox}
+  \xi_{\mathrm{Cox}}
+    =\frac{\displaystyle
+       \left[\int_0^{\tau} w(t)\,\alpha(t)\lambda_0(t)\dd t\right]^2}{
+      \displaystyle
+       \int_0^{\tau} w(t)\,\lambda_0(t)\dd t},
+\end{equation}
+\begin{equation}\label{eq:eff-DRMST}
+  \xi_{\DRMST}
+    =\frac{\displaystyle
+       \left[\int_0^{\tau}\!\left\{R_0(\tau)-R_0(t)\right\}
+             \alpha(t)\lambda_0(t)\dd t\right]^2}{
+      \displaystyle
+       \int_0^{\tau}\!\left\{R_0(\tau)-R_0(t)\right\}^{\!2}
+       \frac{\lambda_0(t)}{w(t)}\dd t}.
+\end{equation}
+
+
+
+\section{Derivation of the Weight Function Representations}
+\label{sec:appendix-weights}
+
+We prove that each of the three statistics of
+Section~\ref{sec:three-stats} is asymptotically equivalent to a version of
+weighted logrank statistic~\eqref{eq:wlr-generic},
+$$\int_0^\tau W(t)\,d[\hat\Lambda_1(t)-\hat\Lambda_0(t)].$$
+All derivations use: (i) the KM linear representation
+$$\sqrt{n}(\hat S_k-S_k)=-S_k\sqrt{n}(\hat\Lambda_k-\Lambda_k)+o_p(1);$$
+(ii)  the functional delta method; and
+(iii) the local-alternative approximation
+$$S_{1n}(t)=S_0(t)-\frac{S_0(t)A(t)}{\sqrt{n}}+o(n^{-1/2}).$$
+For simplicity, we also assume equal allocation and common censoring $S_C(\cdot)$.
+
+\begin{itemize}
+\item \textbf{Cox model-based statistic.}
+  Let
+\(\ell_n(\theta)\) be the log partial likelihood over \([0, \tau]\),
+\(U_n(\theta)=\partial\ell_n(\theta)/\partial\theta\) its score, and
+\(\mathcal I_n(\theta)=-\partial^2\ell_n(\theta)/\partial\theta^2\) the
+observed information.  The score at \(\theta=0\) is exactly the log-rank
+statistic, \(n^{-1}U_n(0)=U_{\mathrm{Cox}}\) in ~\eqref{eq:cox-stat}, and
+\[
+  n^{-1}\mathcal I_n(0)
+    \;\longrightarrow\;
+  \int_0^{\tau}w(t)\lambda_0(t)dt=\sigma_\theta^{-2}
+\]
+in probability, uniformly in a neighbourhood of \(\theta=0\).  Since
+\(\hat\theta=O_p(n^{-1/2})\) under the local
+alternatives~\eqref{eq:local-alt} and \(U_n(\hat\theta)=0\), a one-term
+Taylor expansion of \(U_n(\theta)\) about \(\theta=0\) gives
+\[
+  0=n^{-1}U_n(\hat\theta)
+   =U_{\mathrm{Cox}}-n^{-1}\mathcal I_n(0)\,\hat\theta+o_p(n^{-1/2})
+  \Rightarrow
+  \sqrt n\,\hat\theta=\sigma_\theta^{2}\sqrt n\,U_{\mathrm{Cox}}+o_p(1).
+\]
+Hence \(\hat\theta\) and \(U_{\mathrm{LR}}\) have the same
+limit, and \(Z_{\mathrm{Cox}}\) and the normalized log-rank statistic are
+asymptotically equivalent.  The logrank statistic~\eqref{eq:cox-stat} is
+already of the weighted-log-rank form, with random weight
+\[
+ \hat{w}_{\rm{Cox}}(t)=\frac{Y_1(t)Y_0(t)}{Y_1(t)+Y_0(t)},
+\]
+where $Y_k(t)$ is the size of the risk set of group $k$ at $t.$  By law of large numbers, $n^{-1}\hat{w}_{\rm{Cox}}(t)$ converges to \(w(t)\), which is $S_0(t)S_C(t)/4$ under equal
+allocation and common censoring. Therefore, we can set
+\[
+  W_{\mathrm{Cox}}(t)=4w(t)=\;S_0(t)S_C(t),
+\]
+in (\ref{eq:wlr-generic}).
+
+
+\item \textbf{D-RMST.}
+By functional delta-method, we have
+\begin{align*}
+  \sqrt{n}\hat\theta_{\DRMST}&=-\sqrt{n}\int_0^\tau S_0(t)\,\hat{\Delta}_\Lambda(t)\dd t+O\bigl(\sqrt{n}\|\hat{\Delta}_\Lambda\|^2\bigr)\\
+  &=-\sqrt{n}\int_0^\tau \int_0^t S_0(t) d\Delta_\Lambda(u)\dd t+O\bigl(\sqrt{n}\|\sqrt{\Delta}_\Lambda\|^2\bigr)\\
+  &=-\sqrt{n}\int_0^\tau\left\{\int_u^\tau S_0(t)dt\right\}d\hat{\Delta}_\Lambda(u)+O_p\bigl(n^{-1/2}\bigr)\\
+  &=-\sqrt{n}\int_0^\tau\{R_0(\tau)-R_0(t)\}\,\dd\Delta_\Lambda(t)+o_p(1).
+\end{align*}
+Therefore, we may set the weight as
+\[
+  W_{\DRMST}(t)=\frac{R_0(\tau)-R_0(t)}{R_0(\tau)},
+\]
+as $Z_{\DRMST}$ is invariant to multiplying any nonzero constant to the weight function.
+
+
+\item \textbf{RAH.}
+Using the same method, we have
+\[
+  W_{\RAH}(t)=-\left[\frac{S_0(\tau)}{F_0(\tau)}+\frac{R_0(\tau)-R_0(t)}{R_0(\tau)}\right].
+\]
+Multiplying
+$W_{\RAH}(\cdot)$ by $-F_0(\tau)$ yields an equivalent weight
+\[
+  W_{\RAH}(t)
+    =S_0(\tau)+F_0(\tau)\,\frac{R_0(\tau)-R_0(t)}{R_0(\tau)}
+    =S_0(\tau)+\bigl[1-S_0(\tau)\bigr]\, W_{\DRMST}(v).
+\]
+\end{itemize}
+
+\section{Simulation Study for PH Setting at HR\,=\,0.82}
+\label{sec:appendix-hr082}
+
+We repeat the simulation for PH scenarios with HR=0.82. The results are reported in Tables~\ref{tab:sim3a-hr082} and~\ref{tab:sim3c-hr082}.
+Both ARE and ERE are similar to to those for HR$=0.70$:
+
+\begin{table}[h!]
+\centering
+\small
+\caption{ARE and ERE under PH (HR$=0.82$).}
+\label{tab:sim3a-hr082}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llcccccc}
+\hline
+$S_0(40)$ & Censoring & ARE(R/C) & ARE(A/C) & ARE(A/R) & ERE(R/C) & ERE(A/C) & ERE(A/R) \\
+\hline
+0.10 & light & 0.992 & 0.940 & 0.947 & 0.990 & 0.944 & 0.954 \\
+0.10 & heavy & 0.982 & 0.797 & 0.812 & 1.000 & 0.836 & 0.836 \\
+0.20 & light & 0.978 & 0.915 & 0.935 & 0.975 & 0.882 & 0.905 \\
+0.20 & heavy & 0.992 & 0.750 & 0.756 & 0.993 & 0.735 & 0.741 \\
+0.30 & light & 0.964 & 0.896 & 0.929 & 0.970 & 0.908 & 0.936 \\
+0.30 & heavy & 0.996 & 0.719 & 0.722 & 1.006 & 0.661 & 0.657 \\
+0.40 & light & 0.951 & 0.880 & 0.926 & 0.945 & 0.883 & 0.935 \\
+0.40 & heavy & 0.997 & 0.697 & 0.699 & 1.005 & 0.699 & 0.696 \\
+0.50 & light & 0.939 & 0.868 & 0.924 & 0.952 & 0.850 & 0.893 \\
+0.50 & heavy & 0.996 & 0.679 & 0.682 & 0.998 & 0.692 & 0.693 \\
+0.60 & light & 0.927 & 0.857 & 0.924 & 0.915 & 0.856 & 0.935 \\
+0.60 & heavy & 0.995 & 0.665 & 0.668 & 0.998 & 0.671 & 0.672 \\
+0.70 & light & 0.916 & 0.847 & 0.924 & 0.928 & 0.847 & 0.914 \\
+0.70 & heavy & 0.993 & 0.653 & 0.658 & 0.996 & 0.643 & 0.646 \\
+0.80 & light & 0.906 & 0.838 & 0.925 & 0.892 & 0.848 & 0.950 \\
+0.80 & heavy & 0.990 & 0.643 & 0.649 & 1.009 & 0.636 & 0.631 \\
+0.90 & light & 0.897 & 0.831 & 0.927 & 0.915 & 0.829 & 0.906 \\
+0.90 & heavy & 0.987 & 0.634 & 0.642 & 1.020 & 0.563 & 0.552 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\small
+\caption{ARE, empirical power, and ERE under PH (HR$=0.82$) with different baseline distributions in the control arm.}
+\label{tab:sim3c-hr082}
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{llccc ccc ccc }
+\hline
+$\kappa$ & Cens
+  & ARE(R/C) & ARE(A/C) & ARE(A/R)
+  & Pow Cox & Pow RAH & Pow D-RMST
+  & ERE(R/C) & ERE(A/C) & ERE(A/R)
+  \\
+\hline
+0.500 & L & 0.960 & 0.920 & 0.959 & 0.460 & 0.428 & 0.435 & 0.949 & 0.921 & 0.970 \\
+0.500 & H & 0.995 & 0.750 & 0.753 & 0.390 & 0.313 & 0.389 & 1.001 & 0.778 & 0.777 \\
+0.826 & L & 0.939 & 0.868 & 0.924 & 0.430 & 0.404 & 0.415 & 0.944 & 0.880 & 0.931 \\
+0.826 & H & 0.996 & 0.679 & 0.682 & 0.327 & 0.264 & 0.331 & 1.002 & 0.691 & 0.689 \\
+1.000 & L & 0.930 & 0.840 & 0.904 & 0.445 & 0.377 & 0.415 & 0.933 & 0.878 & 0.941 \\
+1.000 & H & 0.995 & 0.651 & 0.654 & 0.323 & 0.255 & 0.321 & 1.001 & 0.658 & 0.657 \\
+1.500 & L & 0.913 & 0.776 & 0.850 & 0.408 & 0.331 & 0.370 & 0.906 & 0.756 & 0.834 \\
+1.500 & H & 0.990 & 0.597 & 0.603 & 0.294 & 0.215 & 0.294 & 0.988 & 0.616 & 0.623 \\
+2.000 & L & 0.905 & 0.730 & 0.806 & 0.371 & 0.289 & 0.350 & 0.900 & 0.713 & 0.792 \\
+2.000 & H & 0.984 & 0.567 & 0.576 & 0.245 & 0.175 & 0.248 & 1.002 & 0.542 & 0.540 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+\section{Simulation Study for PH Setting with Different Sample Size, Horizon and Survival Distributions}
+\label{sec:appendix-tau10}
+
+We also repeat simulation study the PH setting under different design:
+$\tau=10$, $n_0=n_1=150$, and three baseline distributions (
+an exponential with $S_0(10)\approx0.37$;
+a Weibull baseline with a
+decreasing hazard ($\kappa=0.7$) and $S_0(10)=0.5;$ and a Weibull baseline with an increasing hazard ($\kappa=1.5$) and $S_0(10)=0.5.$)
+We also consider light censoring with $C \sim \min \left\{U(8, 12), \mbox{Exp}(0.02)\right\}$ and heavy censoring with $C\sim \min \left\{U(8, 12), \mbox{Exp}(0.20)\right\}$.
+
+The results are reported in Table~\ref{tab:sim-tau10}. It is interesting to observe that
+RAH-based test is more efficient than D-RMST-based test
+under light censoring (ARE ranges from $1.067$ to $1.119$),
+while D-RMST-based test is substantially more efficient than RAH-based test
+under heavy censoring (ARE ranges from $0.66$ to $0.69$).
+
+\begin{table}[h!]
+\centering
+\small
+\caption{ARE and ERE under PH (HR$=0.70$), $\tau=10$,
+  $n_0=n_1=150$, and light and heavy censoring.
+  }
+\label{tab:sim-tau10}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llcccccc}
+\hline
+Baseline & Cens & ARE(R/C) & ARE(A/C) & ARE(A/R) & ERE(R/C) & ERE(A/C) & ERE(A/R) \\
+\hline
+Exp($\lambda_0{=}0.10$)      & L & 0.896 & 0.958 & 1.068 & 0.891 & 0.960 & 1.079 \\
+Exp($\lambda_0{=}0.10$)      & H & 0.968 & 0.662 & 0.684 & 0.966 & 0.523 & 0.542 \\
+Weibull($\kappa{=}0.7$)      & L & 0.906 & 0.966 & 1.067 & 0.932 & 0.959 & 1.029 \\
+Weibull($\kappa{=}0.7$)      & H & 0.966 & 0.666 & 0.690 & 0.982 & 0.628 & 0.640 \\
+Weibull($\kappa{=}1.5$)      & L & 0.823 & 0.921 & 1.119 & 0.737 & 0.950 & 1.289 \\
+Weibull($\kappa{=}1.5$)      & H & 0.975 & 0.643 & 0.659 & 0.985 & 0.592 & 0.601 \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Additional Simulations: Crossing Hazards}
+\label{sec:appendix-crossing}
+
+
+
+In this simulation, $\alpha(t)=\log(0.46)+(t/t_M)$ with $t_M=43$ months,
+$\kappa=0.826$, and $S_0(40)=0.50$: the HR starts at $0.46,$ crosses one, and rises above 1 late in follow-up. Thus, an early treatment benefit is reversed to harm at late times.
+Table~\ref{tab:sim-crossing} reports the ARE and ERE under light and heavy censoring. Both RAH and D-RMST-based tests exceed Cox model-based test (ARE and ERE above~1). The ordering and magnitudes are similar across censoring levels.
+
+
+
+
+\begin{table}[ht]
+\centering
+\small
+\caption{ARE and ERE under the crossing-hazard scenario.
+  $\alpha(u)=\log(0.46)+(u/t_M)$.  $\kappa=0.826$, $\tau=40$,
+  $S_0(40)=0.50$, and $n_0=n_1=400$ per arm.}
+\label{tab:sim-crossing}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccccc}
+\hline
+Cens & ARE(R/C) & ARE(A/C) & ARE(A/R) & ERE(R/C) & ERE(A/C) & ERE(A/R) \\
+\hline
+L & 1.040 & 1.072 & 1.031 & 1.027 & 1.075 & 1.047 \\
+H & 1.041 & 1.053 & 1.012 & 1.021 & 1.070 & 1.048 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+\bibliographystyle{plainnat}
+\bibliography{manuscript/refs}
+\end{document}

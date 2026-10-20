@@ -1,0 +1,25 @@
+--- paper.tex (before)
++++ paper.tex (after)
+@@ -865,7 +865,22 @@
+ 
+ In the docetaxel arm, $\kappa_0>1$ induces a monotone increasing hazard; in the nivolumab arm, $\kappa_1\approx1$ indicates an approximately constant hazard. The fitted log hazard ratio is time varying: $\alpha(1)=\AlphaCMOne$, it crosses zero near month \AlphaCMCross, and it reaches \AlphaCMTau\ at month \TauCM. This pattern is characteristic of immunotherapy and is consistent with the Schoenfeld diagnosis (Figure~\ref{fig:ph-diag}), whose negative residual slope indicates a decreasing log hazard ratio over time.
+ 
++For the design-stage evaluations that follow (theoretical ARE, empirical
++relative efficiency, power, and required sample size), we pair the fitted
++Weibull event-time model with a censoring working model informed by the
++trial design. Patients were enrolled between November 2012 and December
++2013, and overall survival was assessed at a database lock in March 2015,
++with a reported minimum follow-up of 13.2 months \citep{Borghaei2015}.
++Assuming approximately uniform accrual, we use the rounded administrative
++follow-up window $U\sim\mathrm{Uniform}(\CMAdminLower,\CMAdminUpper)$ months.
++We add an independent exponential dropout time
++$E\sim\mathrm{Exp}(\lambda_c)$ with $\lambda_c=\CMDropoutRate$ per month
++(about $\CMDropoutAnnualPct\%$ per year), and set $C=\min(U,E)$.
++The administrative window is consistent with the predominantly late
++censoring in the reconstructed data; the dropout rate is treated as a
++working design assumption and examined in the sensitivity analysis below.
+ 
++
+ Table~\ref{tab:cm057-are-ere} presents the ARE and ERE results. Both measures yield the same ordering of the three tests:
+ \[
+ \RAH \ge \mathrm{Cox} \ge \DRMST.

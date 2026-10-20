@@ -1,0 +1,8 @@
+"experiment","identical_results","clean_runtime_seconds"
+"appendix_crossing",TRUE,64.7403409481049
+"appendix_hr082",TRUE,945.408015966415
+"appendix_tau10",TRUE,17.1012699604034
+"checkmate_observed",TRUE,0.102500915527344
+"checkmate_sim",TRUE,480.034981012344
+"main_nonph",TRUE,134.767621994019
+"main_ph",TRUE,606.948586940765

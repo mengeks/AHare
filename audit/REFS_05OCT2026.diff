@@ -1,0 +1,16 @@
+--- refs.bib (before)
++++ refs.bib (after)
+@@ -211,3 +211,13 @@
+   note        = {Repository date listed as 1949?; notes based on lectures at Columbia University},
+   url         = {https://www.lib.ncsu.edu/resolver/1840.4/2430},
+ }
++
++@techreport{FDA2025OS,
++  author      = {{U.S. Food and Drug Administration}},
++  title       = {Approaches to Assessment of Overall Survival in Oncology Clinical Trials: Guidance for Industry},
++  institution = {U.S. Department of Health and Human Services, Food and Drug Administration, Oncology Center of Excellence},
++  year        = {2025},
++  month       = {August},
++  note        = {Draft guidance},
++  url         = {https://www.fda.gov/media/188274/download},
++}

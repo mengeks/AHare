@@ -1,0 +1,2 @@
+"table","setting","old_replication","tau","max_time_arm0","max_time_arm1","old_rmst_error","new_drmst"
+7,"dropout=0.020",100,24,23.9973310288042,28.9281077496707,"The truncation time, tau, needs to be shorter than or equal to the minimum of the largest observed time on each of the two groups:  24",1.7472841605688

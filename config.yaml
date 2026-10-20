@@ -1,0 +1,70 @@
+project:
+  base_seed: 20260930
+  integration_step: 0.01
+  alpha_level: 0.05
+  workers: 4
+
+simulation:
+  tau: 40
+  cox_tau: 40
+  cox_power_test: score
+  shape: 0.826
+  s0: 0.50
+  hr: 0.70
+  n_per_arm: 400
+  B: 2000
+  censoring_uniform: [24, 43]
+  censoring_rates:
+    light: 0.0006
+    heavy: 0.025
+  # Scientific fading-benefit cutoff approved at Gate 1.
+  fading_t_m: 43
+  effect_shape: 1.0
+  effect_calibration_step: 0.1
+  nonph_grid_max: 500
+  nonph_grid_n: 5000
+  s0_grid: [0.10, 0.30, 0.50, 0.70, 0.90]
+  shape_grid: [0.5, 0.826, 1.0, 1.5, 2.0]
+
+checkmate057:
+  tau: 24
+  cox_tau: 24
+  cox_power_test: wald
+  rah_power_method: ah2
+  integration_step: 0.05
+  n_per_arm: 300
+  B_ere: 500
+  B_power: 2000
+  # Rounded design-based follow-up window: accrual Nov 2012-Dec 2013,
+  # database lock Mar 2015 (Borghaei et al., 2015).
+  censoring_uniform: [13, 28]
+  dropout_rate: 0.005
+  horizon_grid: [18, 21, 24]
+  dropout_grid: [0.001, 0.005, 0.020]
+  power_n_grid: [100, 150, 200, 250, 300, 350, 400, 450, 500]
+  ph_hr: 0.75
+
+appendix_hr082:
+  hr: 0.82
+  n_per_arm: 400
+  B: 2000
+  s0_grid: [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90]
+  shape_grid: [0.5, 0.826, 1.0, 1.5, 2.0]
+
+appendix_tau10:
+  tau: 10
+  cox_tau: 10
+  n_per_arm: 150
+  B: 500
+  hr: 0.70
+  censoring_uniform: [8, 12]
+  censoring_rates:
+    light: 0.02
+    heavy: 0.20
+  shapes: [1.0, 0.7, 1.5]
+
+appendix_crossing:
+  n_per_arm: 400
+  B: 2000
+  t_m: 43
+  effect_shape: 1.0

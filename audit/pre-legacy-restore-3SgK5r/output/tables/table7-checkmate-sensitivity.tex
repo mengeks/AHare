@@ -1,0 +1,22 @@
+\begin{table}[ht]
+\centering
+\caption{Sensitivity to analysis horizon, dropout rate, and hazard structure; the common baseline is $\tau=24$, $\lambda_c=0.005$, fitted non-PH, $n=300$ per arm and $B=500$.}
+\label{tab:sens-are}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccc}
+\toprule
+Panel & Setting & ARE(D/C) & ARE(R/C) & ARE(R/D) & ERE(D/C) & ERE(R/C) & ERE(R/D)
+\\
+\midrule
+Horizon & $\tau=18$ & 0.651 & 1.198 & 1.841 & 0.607 & 1.292 & 2.127 \\
+Horizon & $\tau=21$ & 0.789 & 1.211 & 1.533 & 0.768 & 1.299 & 1.691 \\
+Horizon & $\tau=24$ & 0.915 & 1.199 & 1.310 & 0.935 & 1.332 & 1.425 \\
+Dropout & $\lambda_c=0.001$ & 0.884 & 1.180 & 1.335 & 0.895 & 1.223 & 1.367 \\
+Dropout & $\lambda_c=0.005$ & 0.915 & 1.199 & 1.310 & 0.935 & 1.332 & 1.425 \\
+Dropout & $\lambda_c=0.020$ & 1.039 & 1.265 & 1.217 & 1.071 & 1.369 & 1.278 \\
+Hazard & Non-PH (fitted) & 0.915 & 1.199 & 1.310 & 0.935 & 1.332 & 1.425 \\
+Hazard & PH (HR$=0.75$) & 0.995 & 0.870 & 0.875 & 0.990 & 0.904 & 0.913 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}

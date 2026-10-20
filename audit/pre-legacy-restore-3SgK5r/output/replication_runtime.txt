@@ -1,0 +1,5 @@
+Arguments: 
+Finished: 2026-10-02 21:00:12 UTC
+Total elapsed seconds: 2.894
+Configured parallel processes: 4
+R: R version 4.5.1 (2025-06-13)

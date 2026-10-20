@@ -1,0 +1,27 @@
+\begin{table}[ht]
+\centering
+\caption{Sensitivity of pairwise ARE (theoretical) and ERE ($n=300$ per arm,
+  $B=500$) to analysis horizon, dropout rate, and hazard structure.
+  The baseline scenario ($\tau=24$, $\lambda_c=0.005$, non-PH) matches
+  Table~\ref{tab:cm057-are-ere}.}
+\label{tab:sens-are}
+\medskip
+\begin{tabular}{llcccccc}
+\toprule
+& & \multicolumn{3}{c}{ARE (theoretical)} & \multicolumn{3}{c}{ERE (empirical)} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+Sensitivity & Setting & $\frac{\mathrm{D-RMST}}{\mathrm{Cox}}$ & $\frac{\mathrm{RAH}}{\mathrm{Cox}}$ & $\frac{\mathrm{RAH}}{\mathrm{D-RMST}}$ & $\frac{\mathrm{D-RMST}}{\mathrm{Cox}}$ & $\frac{\mathrm{RAH}}{\mathrm{Cox}}$ & $\frac{\mathrm{RAH}}{\mathrm{D-RMST}}$ \\
+\midrule
+\multirow{3}{*}{Analysis horizon} & $\tau=18$ mo & 0.531 & 0.964 & 1.817 & 0.451 & 0.943 & 2.091 \\
+ & $\tau=21$ mo & 0.731 & 1.110 & 1.519 & 0.676 & 1.145 & 1.694 \\
+ & $\tau=24$ mo & 0.906 & 1.178 & 1.300 & 0.886 & 1.221 & 1.379 \\
+\midrule
+\multirow{3}{*}{Dropout rate} & $\lambda_c=0.001$ & 0.874 & 1.158 & 1.324 & 0.834 & 1.213 & 1.455 \\
+ & $\lambda_c=0.005$ & 0.906 & 1.178 & 1.300 & 0.882 & 1.210 & 1.371 \\
+ & $\lambda_c=0.020$ & 1.032 & 1.246 & 1.207 & 1.058 & 1.461 & 1.381 \\
+\midrule
+\multirow{2}{*}{Hazard structure} & Non-PH (fitted) & 0.906 & 1.178 & 1.300 & 0.874 & 1.295 & 1.483 \\
+ & PH ($\mathrm{HR}=0.75$) & 0.999 & 0.870 & 0.871 & 0.996 & 0.862 & 0.865 \\
+\bottomrule
+\end{tabular}
+\end{table}
